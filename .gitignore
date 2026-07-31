@@ -1,5 +1,7 @@
-builddir/
+/builddir/
 *.swp
 *.o
 .vs/
 .idea/
+venv/
+.venv/
