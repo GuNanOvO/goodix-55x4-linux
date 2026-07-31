@@ -7,22 +7,30 @@ on:
 
 jobs:
   build-deb:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         include:
-          - os: ubuntu-24.04
+          - container: debian:sid
+            distro: debian-sid
+            deps_pkg: libfprint-2-dev
+          - container: ubuntu:noble
             distro: ubuntu-24.04
-          - os: ubuntu-22.04
+            deps_pkg: libfprint-2-dev
+          - container: ubuntu:jammy
             distro: ubuntu-22.04
+            deps_pkg: libfprint-2-dev
+    container:
+      image: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v7
 
       - name: Install dependencies
         run: |
-          sudo apt update
-          sudo apt install -y meson ninja-build pkg-config \
-            libfprint-2-dev libglib2.0-dev libgusb-dev \
+          apt update
+          DEBIAN_FRONTEND=noninteractive apt install -y \
+            meson ninja-build pkg-config \
+            ${{ matrix.deps_pkg }} libglib2.0-dev libgusb-dev \
             libnss3-dev libssl-dev libcairo2-dev \
             gobject-introspection libgirepository1.0-dev \
             libopencv-dev gtk-doc-tools
@@ -36,6 +44,7 @@ jobs:
       - name: Package .deb
         run: |
           cd libfprint
+          apt install -y dpkg-dev
           DESTDIR=$(pwd)/debian-pkg
           meson install -C builddir --destdir="$DESTDIR"
           cd "$DESTDIR"
@@ -49,7 +58,7 @@ jobs:
           Maintainer: Goodix Fingerprint Linux Community
           Description: Goodix GF32xx fingerprint sensor driver for Linux
            Modified goodixtls driver supporting GF3208/GF3268 sensors
-           (USB 27c6:55a4, 27c6:55b4).
+           (USB 27c6:55a4, 27c6:55b4). Built for ${{ matrix.distro }}.
           Depends: libfprint-2-2, libglib2.0-0, libgusb2a, libnss3, libssl3
           EOF
           dpkg-deb --build . goodix-gf32xx-driver_${VERSION}_${{ matrix.distro }}_amd64.deb
