@@ -48,7 +48,6 @@ jobs:
           Description: Goodix GF32xx fingerprint sensor driver for Linux (Ubuntu)
            Modified goodixtls driver for GF3208/GF3268 (USB 27c6:55a4/55b4).
            Built on Ubuntu 24.04. For Debian or other distros, use source build.
-          Conflicts: libfprint-2-2
           Replaces: libfprint-2-2
           Provides: libfprint-2-2
           EOF
