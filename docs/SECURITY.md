@@ -59,3 +59,7 @@ The driver implements PSK write (`GOODIX_CMD_PRESET_PSK_WRITE`, `0xe0`) and firm
 Risk mitigation: USB device access is restricted to `plugdev` group via udev rules (`MODE="0660", GROUP="plugdev"`), not world-writable. Only logged-in users with a physical session can interact with the device. Firmware flashing is further gated by the separate `goodix-fp-dump` tool which requires explicit user confirmation.
 
 A physically-present attacker with USB bus access could still modify the device firmware. This is an inherent risk of USB-connected peripherals and is not specific to this driver.
+
+## PSK Race Condition
+
+PSK check-then-write is performed as sequential SSM states (`ACTIVATE_CHECK_PSK` → `ACTIVATE_WRITE_PSK`) without a device-level lock. A process with USB access could theoretically inject a PSK write between the check and the write (~milliseconds). Mitigation: USB device access requires `plugdev` group membership (C-1), and the write state re-verifies the PSK hash after writing. An attacker would need both group membership and precise timing during device activation.
