@@ -153,8 +153,13 @@ goodix_tls_server_deinit (GoodixTlsServer *self, GError **error)
   SSL_shutdown (self->ssl_layer);
   SSL_free (self->ssl_layer);
 
-  close (self->client_fd);
-  close (self->sock_fd);
+  if (self->sock_fd >= 0)
+    close (self->sock_fd);
+  if (self->client_fd >= 0)
+    close (self->client_fd);
+
+  self->sock_fd = -1;
+  self->client_fd = -1;
 
   SSL_CTX_free (self->ssl_ctx);
 
