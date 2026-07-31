@@ -51,3 +51,11 @@ The udev rule grants `0666` access to Goodix USB devices (`27c6:55a4`, `27c6:55b
 ## Reporting
 
 Security concerns should be reported via GitHub Issues on [GuNanOvO/goodix-55x4-linux](https://github.com/GuNanOvO/goodix-55x4-linux/issues).
+
+## Firmware Write Exposure
+
+The driver implements PSK write (`GOODIX_CMD_PRESET_PSK_WRITE`, `0xe0`) and firmware update commands (`GOODIX_CMD_WRITE_FIRMWARE`, `0xf0`; `GOODIX_CMD_MCU_ERASE_APP`, `0xa4`) for device provisioning. These are necessary for the driver's core functionality (auto-PSK provisioning, initial firmware setup).
+
+Risk mitigation: USB device access is restricted to `plugdev` group via udev rules (`MODE="0660", GROUP="plugdev"`), not world-writable. Only logged-in users with a physical session can interact with the device. Firmware flashing is further gated by the separate `goodix-fp-dump` tool which requires explicit user confirmation.
+
+A physically-present attacker with USB bus access could still modify the device firmware. This is an inherent risk of USB-connected peripherals and is not specific to this driver.
