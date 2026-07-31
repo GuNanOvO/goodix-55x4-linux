@@ -65,6 +65,8 @@ See [BUILDING.md](docs/BUILDING.md) for manual steps and Arch Linux instructions
 
 ### One-time: Firmware Flash
 
+> **Warning:** The firmware flashing tool runs third-party Python code with root privileges via USB. Review the source at [mpi3d/goodix-fp-dump](https://github.com/mpi3d/goodix-fp-dump) before execution. The tool backs up your current firmware automatically before flashing.
+
 If your sensor has never been touched by this driver before, you may need to flash community firmware **once**. This is required because the sensor's on-chip firmware dictates the expected PSK and protocol version.
 
 ```bash
