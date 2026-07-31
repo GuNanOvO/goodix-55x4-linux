@@ -409,6 +409,11 @@ goodix_receive_pack (FpDevice *dev, guint8 *data, guint32 length)
 
     case GOODIX_FLAGS_TLS_DATA:
         fp_dbg("Got TLS data msg");
+        if (payload_len < 9)
+          {
+            fp_warn ("TLS_DATA payload too short: %d bytes (need >= 9)", payload_len);
+            break;
+          }
         // GOODIX 55x4: Remove first 9 to get valid TLS content
         goodix_receive_done(dev, payload+9, payload_len-9, NULL);
         break;
