@@ -621,6 +621,10 @@ gboolean save_image_to_pgm2(guchar *data, const char *path) {
   return TRUE;
 }
 
+// DEBUG-only: writes PGM image files. Wrapped in #ifdef to prevent
+// accidental use in production builds. Only enabled for local debugging.
+#ifdef GOODIX_DEBUG_IMAGES
+
 gboolean save_image_to_pgm(FpImage *img, const char *path) {
   FILE *fd = fopen(path, "w");
   size_t write_size;
@@ -652,6 +656,8 @@ gboolean save_image_to_pgm(FpImage *img, const char *path) {
 
   return TRUE;
 }
+
+#endif /* GOODIX_DEBUG_IMAGES */
 
 enum scan_empty_img_state {
   SCAN_EMPTY_GET_IMG,
