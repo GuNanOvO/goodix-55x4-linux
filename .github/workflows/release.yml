@@ -7,10 +7,14 @@ on:
 
 jobs:
   build-deb:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        distro: [ubuntu-24.04, ubuntu-22.04]
+        include:
+          - os: ubuntu-24.04
+            distro: noble
+          - os: ubuntu-22.04
+            distro: jammy
     steps:
       - uses: actions/checkout@v4
 
