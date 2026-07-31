@@ -39,8 +39,12 @@ This driver replaces the system libfprint with a patched build that:
 
 ### Quick: Pre-built .deb
 
+> **Note:** Release artifacts are automatically built by GitHub Actions and are **not GPG-signed**. For production or security-sensitive environments, consider building from source. SHA256 checksums are provided on the release page for verification.
+
 ```bash
 wget https://github.com/GuNanOvO/goodix-55x4-linux/releases/latest/download/goodix-gf32xx-driver_0.1.0_ubuntu-24.04_amd64.deb
+wget https://github.com/GuNanOvO/goodix-55x4-linux/releases/latest/download/SHA256SUMS
+sha256sum -c SHA256SUMS  # verify integrity
 sudo dpkg -i goodix-gf32xx-driver_*.deb
 sudo apt install --fix-broken -y   # pull missing deps if any
 ```
