@@ -43,15 +43,14 @@ sudo ninja -C builddir install
 sudo ldconfig
 
 # Install udev rule
-echo "[4/4] Installing udev rule..."
-sudo cp "$SCRIPT_DIR/99-goodix-fp.rules" /etc/udev/rules.d/
+echo "[4/4] Installing udev rule and PSK service..."
+sudo install -m 644 "$SCRIPT_DIR/99-goodix-fp.rules" /etc/udev/rules.d/99-goodix-fp.rules
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 
 # Install PSK auto-fix service
-sudo cp "$SCRIPT_DIR/goodix-psk-autofix" /usr/local/bin/
-sudo chmod +x /usr/local/bin/goodix-psk-autofix
-sudo cp "$SCRIPT_DIR/goodix-psk-autofix.service" /etc/systemd/system/
+sudo install -m 755 "$SCRIPT_DIR/goodix-psk-autofix" /usr/local/bin/goodix-psk-autofix
+sudo install -m 644 "$SCRIPT_DIR/goodix-psk-autofix.service" /etc/systemd/system/goodix-psk-autofix.service
 sudo systemctl daemon-reload
 sudo systemctl enable goodix-psk-autofix.service
 
