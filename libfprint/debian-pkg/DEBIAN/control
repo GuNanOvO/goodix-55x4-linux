@@ -1,0 +1,8 @@
+Package: goodix-gf32xx-driver
+Version: 0.1.1
+Architecture: amd64
+Maintainer: Goodix Fingerprint Linux Community
+Description: Goodix GF32xx fingerprint sensor driver for Linux
+ Modified goodixtls driver supporting GF3208/GF3268 sensors
+ (USB 27c6:55a4, 27c6:55b4).
+Depends: libfprint-2-2, libglib2.0-0, libgusb2, libnss3, libssl3
