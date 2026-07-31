@@ -614,6 +614,12 @@ gboolean save_image_to_pgm2(guchar *data, const char *path) {
 
   for (int i = 0; i < write_size; i += 1) {
     r = fprintf(fd, "%d\n", data[i]);
+    if (r < 0)
+      {
+        fclose (fd);
+        g_critical ("fprintf failed at byte %d", i);
+        return FALSE;
+      }
   }
   fclose(fd);
   g_debug("written to '%s'", path);
