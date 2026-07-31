@@ -41,6 +41,11 @@ def find_device():
 
 
 def init_device(device):
+    try:
+        if device.is_kernel_driver_active(0):
+            device.detach_kernel_driver(0)
+    except Exception:
+        pass
     device.set_configuration()
     time.sleep(0.1)
 
@@ -77,10 +82,18 @@ def check_psk(device):
 
 
 def write_psk(device):
-    send_cmd(device, CMD_PSK_WRITE,
-             struct.pack("<IH", 0xbb010003, len(PSK_WHITE_BOX)) + PSK_WHITE_BOX)
-    cmd, _, _ = read_response(device)
-    return cmd == CMD_ACK
+    for attempt in range(3):
+        send_cmd(device, CMD_PSK_WRITE,
+                 struct.pack("<IH", 0xbb010003, len(PSK_WHITE_BOX)) + PSK_WHITE_BOX)
+        try:
+            cmd, _, _ = read_response(device)
+            if cmd == CMD_ACK:
+                return True
+        except Exception as e:
+            print(f"goodix-psk-autofix: PSK write attempt {attempt+1} failed: {e}",
+                  file=__import__('sys').stderr)
+        time.sleep(0.3)
+    return False
 
 
 def main():
