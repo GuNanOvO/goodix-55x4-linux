@@ -4,7 +4,7 @@ Linux driver for Goodix GF3208/GF3268 (55x4 series) fingerprint sensors. USB `27
 
 Built on top of [jedbillyb/libfprint](https://github.com/jedbillyb/libfprint/tree/goodix-55b4-fixes) (PR [TheWeirdDev/libfprint#3](https://github.com/TheWeirdDev/libfprint/pull/3)). Tested on Debian forky/sid and Ubuntu 22.04 / 24.04.
 
-[中文文档](docs/README_CN.md)
+[中文文档](docs/README_CN.md) · [Build Guide](docs/BUILDING.md) · [Technical Details](docs/TECHNICAL.md) · [Security](docs/SECURITY.md) · [RE Notes](docs/RE_NOTES.md)
 
 ## Supported Hardware
 
@@ -72,9 +72,9 @@ python3 -c "import driver_55x4; driver_55x4.main(0x55a4)"
 Forked from `TheWeirdDev/libfprint` (`55b4-experimental`), incorporating fixes from:
 
 - [PR #3](https://github.com/TheWeirdDev/libfprint/pull/3) (jedbillyb): PSK reprovisioning, firmware prefix match, OpenSSL PSK ciphers, payload size fix
-- Additional: image routing fix (cmd 0xd0 acceptance), udev rules, PSK auto-fix service, CI pipeline
+- Additional: image routing fix, udev rules, PSK auto-fix service, CI pipeline
 
-See [RE_NOTES.md](docs/RE_NOTES.md) for detailed reverse-engineering notes.
+Full details in [TECHNICAL.md](docs/TECHNICAL.md) and [RE_NOTES.md](docs/RE_NOTES.md).
 
 ## License
 
