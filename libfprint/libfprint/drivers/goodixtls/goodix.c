@@ -408,6 +408,14 @@ goodix_receive_pack (FpDevice *dev, guint8 *data, guint32 length)
       return;
     }
 
+  if (!valid_checksum)
+    {
+      fp_warn ("invalid pack checksum, dropping %d bytes", priv->length);
+      g_clear_pointer (&priv->data, g_free);
+      priv->length = 0;
+      return;
+    }
+
   switch (flags)
     {
     case GOODIX_FLAGS_MSG_PROTOCOL:
