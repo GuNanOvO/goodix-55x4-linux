@@ -408,14 +408,6 @@ goodix_receive_pack (FpDevice *dev, guint8 *data, guint32 length)
       return;
     }
 
-  if (!valid_checksum)
-    {
-      fp_warn ("invalid pack checksum, dropping %d bytes", priv->length);
-      g_clear_pointer (&priv->data, g_free);
-      priv->length = 0;
-      return;
-    }
-
   switch (flags)
     {
     case GOODIX_FLAGS_MSG_PROTOCOL:
@@ -546,12 +538,9 @@ goodix_send_data (FpDevice *dev, guint8 *data, guint32 length,
     {
       FpiUsbTransfer *transfer = fpi_usb_transfer_new (dev);
       transfer->short_is_error = TRUE;
-      guint32 chunk_size = GOODIX_EP_OUT_MAX_BUF_SIZE;
-      if (i + chunk_size > length)
-        chunk_size = length - i;
 
       fpi_usb_transfer_fill_bulk_full (transfer, class->ep_out, data + i,
-                                       chunk_size, NULL);
+                                       GOODIX_EP_OUT_MAX_BUF_SIZE, NULL);
 
       if (!fpi_usb_transfer_submit_sync (transfer, GOODIX_TIMEOUT,
                                          error))

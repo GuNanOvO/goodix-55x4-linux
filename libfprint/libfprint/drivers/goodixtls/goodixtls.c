@@ -102,26 +102,10 @@ static void tls_server_config_ctx(SSL_CTX* ctx)
 
 int goodix_tls_client_send(GoodixTlsServer* self, guint8* data, guint16 length)
 {
-    guint16 sent = 0;
-    while (sent < length)
-      {
-        int r = write (self->client_fd, data + sent, length - sent);
-        if (r <= 0)
-          return r;
-        sent += (guint16) r;
-      }
-    return sent;
+    return write(self->client_fd, data, length * sizeof(guint8));
 }
 int goodix_tls_client_recv(GoodixTlsServer* self, guint8* data, guint16 length) {
-    guint16 recvd = 0;
-    while (recvd < length)
-      {
-        int r = read (self->client_fd, data + recvd, length - recvd);
-        if (r <= 0)
-          return r;
-        recvd += (guint16) r;
-      }
-    return recvd;
+    return read(self->client_fd, data, length * sizeof(guint8));
 }
 
 int goodix_tls_server_receive(GoodixTlsServer* self, guint8* data,
