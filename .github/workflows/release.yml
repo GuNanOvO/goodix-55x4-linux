@@ -12,11 +12,11 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-            distro: noble
+            distro: ubuntu-24.04
           - os: ubuntu-22.04
-            distro: jammy
+            distro: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install dependencies
         run: |
@@ -54,7 +54,7 @@ jobs:
           dpkg-deb --build . goodix-gf32xx-driver_${VERSION}_${{ matrix.distro }}_amd64.deb
           mv *.deb "$GITHUB_WORKSPACE/"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: deb-${{ matrix.distro }}
           path: goodix-gf32xx-driver_*.deb
@@ -65,14 +65,14 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           pattern: deb-*
           path: pkgs
           merge-multiple: true
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: pkgs/*.deb
           draft: false
