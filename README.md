@@ -22,7 +22,7 @@ Windows 驱动 (一次性) → goodixtls (Linux) → fprintd 可用
 
 ```bash
 # 1. 下载最新 Release
-wget https://github.com/YOUR_ORG/goodix-fingerprint-linux/releases/latest/download/goodix-gf32xx-driver_*.deb
+wget https://github.com/GuNanOvO/goodix-55x4-linux/releases/latest/download/goodix-gf32xx-driver_*.deb
 
 # 2. 安装
 sudo dpkg -i goodix-gf32xx-driver_*.deb
@@ -40,8 +40,8 @@ sudo ./tools/install.sh
 ### 编译安装 (从源码)
 
 ```bash
-git clone --recursive https://github.com/YOUR_ORG/goodix-fingerprint-linux.git
-cd goodix-fingerprint-linux
+git clone --recursive https://github.com/GuNanOvO/goodix-55x4-linux.git
+cd goodix-55x4-linux
 sudo ./tools/install.sh
 ```
 
