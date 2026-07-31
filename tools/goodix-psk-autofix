@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+"""Auto-fix PSK on Goodix fingerprint sensor after Windows dual-boot."""
+
+import usb, struct, time
+
+PMK_HASH = bytes.fromhex(
+    "81b8ff490612022a121a9449ee3aad2792f32b9f3141182cd01019945ee50361")
+PSK_WHITE_BOX = bytes.fromhex(
+    "ec35ae3abb45ed3f12c4751f1e5c2cc05b3c5452e9104d9f2a3118644f37a04b"
+    "6fd66b1d97cf80f1345f76c84f03ff30bb51bf308f2a9875c41e6592cd2a2f9e"
+    "60809b17b5316037b69bb2fa5d4c8ac31edb3394046ec06bbdacc57da6a756c5")
+
+FLAGS_MSG = 0xa0
+CMD_ACK = 0xb0
+CMD_PSK_READ = 0xe4
+CMD_PSK_WRITE = 0xe0
+CMD_NOP = 0x00
+EP_OUT = 0x01
+EP_IN = 0x82
+
+
+def encode_pack(payload, flags=FLAGS_MSG):
+    data = struct.pack("<B", flags)
+    data += struct.pack("<H", len(payload))
+    data += struct.pack("<B", sum(data) & 0xff)
+    data += payload
+    return data
+
+
+def encode_proto(payload, cmd):
+    total_len = len(payload) + 1
+    data = struct.pack("<B", cmd)
+    data += struct.pack("<H", total_len)
+    data += payload
+    data += struct.pack("<B", (0xaa - sum(data)) & 0xff)
+    return data
+
+
+def find_device():
+    return usb.core.find(idVendor=0x27c6, idProduct=0x55a4)
+
+
+def init_device(device):
+    device.set_configuration()
+    time.sleep(0.1)
+
+
+def send_cmd(device, cmd, payload):
+    packet = encode_pack(encode_proto(payload, cmd))
+    # Pad to 64 bytes
+    if len(packet) % 64:
+        packet += b'\x00' * (64 - len(packet) % 64)
+    device.write(EP_OUT, packet, timeout=1000)
+
+
+def read_response(device):
+    data = bytes(device.read(EP_IN, 0x10000, timeout=2000))
+    # Skip pack header (flags + length + checksum = 4 bytes)
+    if len(data) < 8:
+        return None, None, None
+    proto = data[4:]
+    cmd = proto[0]
+    length = struct.unpack("<H", proto[1:3])[0]
+    payload = proto[3:2+length]
+    return cmd, payload, length - 1
+
+
+def check_psk(device):
+    send_cmd(device, CMD_PSK_READ, struct.pack("<I", 0xbb020007))
+    cmd, payload, _ = read_response(device)
+    if cmd != CMD_ACK:
+        return False
+    cmd, payload, _ = read_response(device)
+    if cmd != CMD_PSK_READ:
+        return False
+    return bytes(payload[2:34]) == PMK_HASH
+
+
+def write_psk(device):
+    send_cmd(device, CMD_PSK_WRITE,
+             struct.pack("<IH", 0xbb010003, len(PSK_WHITE_BOX)) + PSK_WHITE_BOX)
+    cmd, _, _ = read_response(device)
+    return cmd == CMD_ACK
+
+
+def main():
+    device = find_device()
+    if device is None:
+        print("goodix-psk-autofix: device not found, skipping")
+        return
+
+    try:
+        init_device(device)
+        send_cmd(device, CMD_NOP, b'\x00\x00')
+
+        if check_psk(device):
+            print("goodix-psk-autofix: PSK OK, nothing to do")
+        else:
+            print("goodix-psk-autofix: PSK mismatch, writing community key...")
+            if write_psk(device):
+                print("goodix-psk-autofix: PSK written successfully")
+            else:
+                print("goodix-psk-autofix: FAILED to write PSK", file=__import__('sys').stderr)
+    except Exception as e:
+        print(f"goodix-psk-autofix: error: {e}", file=__import__('sys').stderr)
+
+
+if __name__ == '__main__':
+    main()

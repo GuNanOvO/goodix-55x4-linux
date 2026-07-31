@@ -1,0 +1,75 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        distro: [ubuntu-24.04, ubuntu-22.04]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y meson ninja-build pkg-config \
+            libfprint-2-dev libglib2.0-dev libgusb-dev \
+            libnss3-dev libssl-dev libcairo2-dev \
+            gobject-introspection libgirepository1.0-dev \
+            libopencv-dev
+
+      - name: Build
+        run: |
+          cd libfprint
+          meson setup builddir --prefix=/usr -Ddrivers=goodixtls55x4 -Dudev_rules=disabled
+          ninja -C builddir
+
+      - name: Package .deb
+        run: |
+          cd libfprint
+          DESTDIR=$(pwd)/debian-pkg
+          meson install -C builddir --destdir="$DESTDIR"
+          cd "$DESTDIR"
+          mkdir -p DEBIAN
+          VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+          cat > DEBIAN/control << EOF
+          Package: goodix-gf32xx-driver
+          Version: ${VERSION}
+          Architecture: amd64
+          Maintainer: Goodix Fingerprint Linux Community
+          Description: Goodix GF32xx fingerprint sensor driver for Linux
+           Modified goodixtls driver supporting GF3208/GF3268 sensors
+           (USB 27c6:55a4, 27c6:55b4).
+          Depends: libfprint-2-2, libglib2.0-0, libgusb2, libnss3, libssl3
+          EOF
+          dpkg-deb --build . goodix-gf32xx-driver_${VERSION}_${{ matrix.distro }}_amd64.deb
+          mv *.deb "$GITHUB_WORKSPACE/"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deb-${{ matrix.distro }}
+          path: goodix-gf32xx-driver_*.deb
+
+  release:
+    needs: build-deb
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: deb-*
+          path: pkgs
+          merge-multiple: true
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pkgs/*.deb
+          draft: false
+          generate_release_notes: true

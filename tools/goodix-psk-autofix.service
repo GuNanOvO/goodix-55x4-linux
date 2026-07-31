@@ -1,0 +1,11 @@
+[Unit]
+Description=Goodix Fingerprint PSK Auto-Fix
+Before=fprintd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/goodix-psk-autofix
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,5 @@
+*.o
+*.swp
+_build
+*.pgm
+buildbuilddir2/
