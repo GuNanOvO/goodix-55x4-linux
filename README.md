@@ -79,3 +79,12 @@ See [RE_NOTES.md](docs/RE_NOTES.md) for detailed reverse-engineering notes.
 ## License
 
 LGPL-2.1
+
+## Acknowledgments
+
+This project stands on the work of:
+
+- [TheWeirdDev/libfprint](https://github.com/TheWeirdDev/libfprint) — original goodixtls driver
+- [jedbillyb/libfprint](https://github.com/jedbillyb/libfprint/tree/goodix-55b4-fixes) — PSK reprovisioning, OpenSSL fixes, firmware matching
+- [mpi3d/goodix-fp-dump](https://github.com/mpi3d/goodix-fp-dump) — firmware flashing & PSK provisioning tool
+- [goodix-fp-linux-dev](https://github.com/goodix-fp-linux-dev) — community firmware maintenance
