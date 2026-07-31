@@ -11,26 +11,16 @@ jobs:
     strategy:
       matrix:
         include:
-          - container: debian:sid
-            distro: debian-sid
-            deps_pkg: libfprint-2-dev
-          - container: ubuntu:noble
+          - os: ubuntu-24.04
             distro: ubuntu-24.04
-            deps_pkg: libfprint-2-dev
-          - container: ubuntu:jammy
-            distro: ubuntu-22.04
-            deps_pkg: libfprint-2-dev
-    container:
-      image: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v7
 
       - name: Install dependencies
         run: |
-          apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y \
-            meson ninja-build pkg-config \
-            ${{ matrix.deps_pkg }} libglib2.0-dev libgusb-dev \
+          sudo apt update
+          sudo apt install -y meson ninja-build pkg-config \
+            libfprint-2-dev libglib2.0-dev libgusb-dev \
             libnss3-dev libssl-dev libcairo2-dev \
             gobject-introspection libgirepository1.0-dev \
             libopencv-dev gtk-doc-tools
@@ -44,7 +34,6 @@ jobs:
       - name: Package .deb
         run: |
           cd libfprint
-          apt install -y dpkg-dev
           DESTDIR=$(pwd)/debian-pkg
           meson install -C builddir --destdir="$DESTDIR"
           cd "$DESTDIR"
@@ -56,13 +45,13 @@ jobs:
           Version: ${VERSION}
           Architecture: amd64
           Maintainer: Goodix Fingerprint Linux Community
-          Description: Goodix GF32xx fingerprint sensor driver for Linux
-           Modified goodixtls driver supporting GF3208/GF3268 sensors
-           (USB 27c6:55a4, 27c6:55b4). Built for ${{ matrix.distro }}.
+          Description: Goodix GF32xx fingerprint sensor driver for Linux (Ubuntu)
+           Modified goodixtls driver for GF3208/GF3268 (USB 27c6:55a4/55b4).
+           Built on Ubuntu 24.04. For Debian or other distros, see source build.
           Conflicts: libfprint-2-2
           Replaces: libfprint-2-2
           EOF
-          dpkg-shlibdeps -O $(find usr -name "*.so*" -type f)
+          dpkg-shlibdeps -O $(find usr -name "*.so*" -type f) 2>/dev/null
           dpkg-gencontrol
           dpkg-deb --build --root-owner-group . goodix-gf32xx-driver_${VERSION}_${{ matrix.distro }}_amd64.deb
           sha256sum *.deb > SHA256SUMS
@@ -84,12 +73,6 @@ jobs:
           pattern: deb-*
           path: pkgs
           merge-multiple: true
-
-      - name: Debug artifacts
-        run: |
-          find pkgs -type f -ls
-          echo "---"
-          ls -la pkgs/ 2>/dev/null || echo "pkgs/ empty or missing"
 
       - name: Create Release
         uses: softprops/action-gh-release@v3
