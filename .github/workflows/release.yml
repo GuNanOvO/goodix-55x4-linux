@@ -50,6 +50,7 @@ jobs:
            Built on Ubuntu 24.04. For Debian or other distros, use source build.
           Conflicts: libfprint-2-2
           Replaces: libfprint-2-2
+          Provides: libfprint-2-2
           EOF
           dpkg-deb --build --root-owner-group . goodix-gf32xx-driver_${VERSION}_${{ matrix.distro }}_amd64.deb
           sha256sum *.deb > SHA256SUMS
