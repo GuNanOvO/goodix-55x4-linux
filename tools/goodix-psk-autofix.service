@@ -1,11 +1,34 @@
 [Unit]
 Description=Goodix Fingerprint PSK Auto-Fix
 Before=fprintd.service
+ConditionPathExists=/usr/local/bin/goodix-psk-autofix
 
 [Service]
 Type=oneshot
 ExecStart=/usr/local/bin/goodix-psk-autofix
 RemainAfterExit=yes
+
+# Sandbox: restrict to minimum privileges
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+RestrictAddressFamilies=AF_UNIX
+SystemCallFilter=@basic-io @io-event @process @signal
+MemoryDenyWriteExecute=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictNamespaces=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictSUIDSGID=yes
+
+# Needs USB device access
+PrivateDevices=no
+DeviceAllow=char-usb_device rw
 
 [Install]
 WantedBy=multi-user.target
