@@ -34,7 +34,7 @@ REPO_DIR="$(dirname "$SCRIPT_DIR")"
 # Build driver
 echo "[2/4] Building driver..."
 cd "$REPO_DIR/libfprint"
-meson setup builddir --prefix=/usr -Ddrivers=goodixtls55x4 -Dudev_rules=disabled
+meson setup builddir --prefix=/usr -Ddrivers=goodixtls55x4 -Dudev_rules=disabled -Ddoc=false
 ninja -C builddir
 
 # Install driver
