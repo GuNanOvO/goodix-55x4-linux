@@ -73,9 +73,17 @@ jobs:
           path: pkgs
           merge-multiple: true
 
+      - name: Debug artifacts
+        run: |
+          find pkgs -type f -ls
+          echo "---"
+          ls -la pkgs/ 2>/dev/null || echo "pkgs/ empty or missing"
+
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
-          files: pkgs/*.deb pkgs/SHA256SUMS
+          files: |
+            pkgs/*.deb
+            pkgs/SHA256SUMS
           draft: false
           generate_release_notes: true
