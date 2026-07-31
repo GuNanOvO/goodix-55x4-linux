@@ -19,10 +19,10 @@ jobs:
             libfprint-2-dev libglib2.0-dev libgusb-dev \
             libnss3-dev libssl-dev libcairo2-dev \
             gobject-introspection libgirepository1.0-dev \
-            libopencv-dev
+            libopencv-dev gtk-doc-tools
 
       - name: Build
         run: |
           cd libfprint
-          meson setup builddir -Ddrivers=goodixtls55x4 -Dudev_rules=disabled
+          meson setup builddir -Ddrivers=goodixtls55x4 -Dudev_rules=disabled -Ddoc=false
           ninja -C builddir
