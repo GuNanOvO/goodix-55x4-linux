@@ -266,6 +266,14 @@ goodix_receive_firmware_version (FpDevice *dev, guint8 *data,
       return;
     }
 
+  if (length > 256)
+    {
+      g_set_error (&error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA,
+                   "firmware version too long: %d bytes", length);
+      callback (dev, NULL, cb_info->user_data, error);
+      return;
+    }
+
   memcpy (payload, data, length);
 
   // Some device send the firmware without the null terminator
