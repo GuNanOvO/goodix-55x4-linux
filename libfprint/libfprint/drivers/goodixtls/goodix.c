@@ -380,6 +380,14 @@ goodix_receive_pack (FpDevice *dev, guint8 *data, guint32 length)
   guint16 payload_len;
   gboolean valid_checksum; // TODO implement checksum.
 
+  if (priv->length + length > GOODIX_MAX_PACKET_SIZE)
+    {
+      fp_err ("packet exceeds max size: %d + %d", priv->length, length);
+      g_clear_pointer (&priv->data, g_free);
+      priv->length = 0;
+      return;
+    }
+
   priv->data = g_realloc (priv->data, priv->length + length);
   memcpy (priv->data + priv->length, data, length);
   priv->length += length;
