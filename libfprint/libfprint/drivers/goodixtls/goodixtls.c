@@ -132,6 +132,10 @@ goodix_tls_init_serve (void *me)
 {
   GoodixTlsServer *self = me;
 
+  // NOTE: SSL_accept() blocks indefinitely. The USB command pipeline has
+  // a per-command timeout (GOODIX_TIMEOUT) that bounds the overall handshake,
+  // but the accept itself has no wall-clock deadline. If the sensor never
+  // completes the TLS handshake, this thread will persist until device close.
   fp_dbg ("TLS server waiting to accept...");
   int retr = SSL_accept (self->ssl_layer);
 
