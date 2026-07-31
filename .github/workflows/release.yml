@@ -40,7 +40,8 @@ jobs:
           meson install -C builddir --destdir="$DESTDIR"
           cd "$DESTDIR"
           mkdir -p DEBIAN
-          VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"
           cat > DEBIAN/control << EOF
           Package: goodix-gf32xx-driver
           Version: ${VERSION}
