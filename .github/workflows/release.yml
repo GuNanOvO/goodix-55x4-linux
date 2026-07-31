@@ -53,7 +53,8 @@ jobs:
           Depends: libfprint-2-2, libglib2.0-0, libgusb2, libnss3, libssl3
           EOF
           dpkg-deb --build . goodix-gf32xx-driver_${VERSION}_${{ matrix.distro }}_amd64.deb
-          mv *.deb "$GITHUB_WORKSPACE/"
+          sha256sum *.deb > SHA256SUMS
+          mv *.deb SHA256SUMS "$GITHUB_WORKSPACE/"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -75,6 +76,6 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
-          files: pkgs/*.deb
+          files: pkgs/*.deb pkgs/SHA256SUMS
           draft: false
           generate_release_notes: true
