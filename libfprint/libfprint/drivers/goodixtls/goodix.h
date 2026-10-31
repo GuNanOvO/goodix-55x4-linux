@@ -23,6 +23,8 @@
 
 // 1 seconds USB timeout
 #define GOODIX_TIMEOUT (1000)
+/* Provisioning may take longer than ordinary commands on older firmware. */
+#define GOODIX_PSK_WRITE_TIMEOUT (5000)
 
 G_DECLARE_DERIVABLE_TYPE (FpiDeviceGoodixTls, fpi_device_goodixtls, FPI,
                           DEVICE_GOODIXTLS, FpImageDevice)

@@ -162,8 +162,6 @@ static void check_reset(FpDevice *dev, gboolean success, guint16 number,
 static void check_preset_psk_read(FpDevice *dev, gboolean success,
                                   guint32 flags, guint8 *psk, guint16 length,
                                   gpointer user_data, GError *error) {
-  g_autofree gchar *psk_str = data_to_str(psk, length);
-
   if (error) {
     fpi_ssm_mark_failed(user_data, error);
     return;
@@ -176,7 +174,6 @@ static void check_preset_psk_read(FpDevice *dev, gboolean success,
     return;
   }
 
-  fp_dbg("Device PSK: 0x%s", psk_str);
   fp_dbg("Device PSK flags: 0x%08x", flags);
 
   if (flags != GOODIX_55X4_PSK_FLAGS) {
@@ -188,7 +185,7 @@ static void check_preset_psk_read(FpDevice *dev, gboolean success,
 
   if (length != sizeof(goodix_55x4_psk_0)) {
     g_set_error(&error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA,
-                "Invalid device PSK: 0x%s", psk_str);
+                "Invalid device PSK hash length: %u", length);
     fpi_ssm_mark_failed(user_data, error);
     return;
   }
@@ -202,13 +199,46 @@ static void check_preset_psk_read(FpDevice *dev, gboolean success,
   /* Device was provisioned with a different PSK (e.g. by Windows). Fall through
    * to ACTIVATE_WRITE_PSK to (re)provision it with the known white-box PSK so
    * the all-zeros TLS-PSK handshake will succeed. */
-  fp_warn("Device PSK 0x%s does not match expected; will write known PSK to "
-          "(re)provision the sensor", psk_str);
+  fp_warn("Device PSK hash does not match expected; will write known PSK to "
+          "(re)provision the sensor");
   fpi_ssm_next_state(user_data);
+}
+
+/* Diagnostic only: a readback must not turn a missing write reply into success.
+ * Never log hash bytes or retry the write from this callback. */
+static void check_psk_after_write_timeout(FpDevice *dev, gboolean success,
+                                         guint32 flags, guint8 *psk,
+                                         guint16 length, gpointer user_data,
+                                         GError *error) {
+  GError *diagnostic = NULL;
+  if (error) {
+    diagnostic = g_error_new(G_IO_ERROR, G_IO_ERROR_TIMED_OUT,
+        "PSK write timed out after 5 seconds; diagnostic readback failed: %s",
+        error->message);
+    g_error_free(error);
+  } else if (!success || flags != GOODIX_55X4_PSK_FLAGS ||
+             length != sizeof(goodix_55x4_psk_0) || !psk) {
+    diagnostic = g_error_new(G_IO_ERROR, G_IO_ERROR_TIMED_OUT,
+        "PSK write timed out after 5 seconds; diagnostic readback invalid "
+        "(success=%d, flags=0x%08x, length=%u)", success, flags, length);
+  } else {
+    gboolean matches = memcmp(psk, goodix_55x4_psk_0, length) == 0;
+    diagnostic = g_error_new(G_IO_ERROR, G_IO_ERROR_TIMED_OUT,
+        "PSK write timed out after 5 seconds; readback hash %s expected value "
+        "(diagnostic only; activation stopped)", matches ? "matches" : "does not match");
+  }
+  fpi_ssm_mark_failed(user_data, diagnostic);
 }
 
 static void check_psk_write(FpDevice *dev, gboolean success, gpointer user_data,
                             GError *error) {
+  if (g_error_matches(error, G_IO_ERROR, G_IO_ERROR_TIMED_OUT)) {
+    g_error_free(error);
+    fp_info("PSK write timed out; reading hash once for diagnosis (no write retry)");
+    goodix_send_preset_psk_read(dev, GOODIX_55X4_PSK_FLAGS, 32,
+                              check_psk_after_write_timeout, user_data);
+    return;
+  }
   if (error) {
     fpi_ssm_mark_failed(user_data, error);
     return;

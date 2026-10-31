@@ -212,7 +212,6 @@ goodix_receive_preset_psk_read (FpDevice *dev, guint8 *data, guint16 length,
     }
 
   GoodixPresetPskResp* resp_data = ((GoodixPresetPskResp *)(sizeof(guint8) + data));
-  g_print("length: %d, offset: %d, flags: %d\n", resp_data->length, resp_data->offset, resp_data->flags);
 
   psk_len =
       GUINT32_FROM_LE(resp_data->length);
@@ -1291,13 +1290,13 @@ goodix_send_preset_psk_write (FpDevice *dev, guint32 flags, guint8 *psk,
       cb_info->user_data = user_data;
 
       goodix_send_protocol (dev, GOODIX_CMD_PRESET_PSK_WRITE, payload,
-                            payload_len, g_free, TRUE, GOODIX_TIMEOUT,
+                            payload_len, g_free, TRUE, GOODIX_PSK_WRITE_TIMEOUT,
                             TRUE, goodix_receive_preset_psk_write, cb_info);
       return;
     }
 
   goodix_send_protocol (dev, GOODIX_CMD_PRESET_PSK_WRITE, payload,
-                        payload_len, g_free, TRUE, GOODIX_TIMEOUT,
+                        payload_len, g_free, TRUE, GOODIX_PSK_WRITE_TIMEOUT,
                         TRUE, NULL, NULL);
 }
 
